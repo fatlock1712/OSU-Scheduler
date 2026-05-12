@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSU Visual Scheduler</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f4f4; padding: 20px; color: #333; }
+        .controls { background: white; padding: 15px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input[type="text"] { width: 80%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 20px; font-size: 16px; background: #d73f09; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #b03005; }
+        
+        .main-container { display: flex; gap: 20px; align-items: flex-start; }
+        
+        /* Time Labels on the Left */
+        .time-axis { width: 60px; position: relative; margin-top: 40px; /* offset for headers */ }
+        .time-label { position: absolute; width: 100%; text-align: right; padding-right: 10px; font-size: 12px; color: #666; transform: translateY(-50%); }
+
+        /* The Grid */
+        .calendar-container {
+            flex-grow: 1;
+            position: relative;
+            background: white;
+            border: 1px solid #ddd;
+            display: flex;
+            height: 600px; /* 10 hours (8am-6pm) * 60px */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .day-column {
+            flex: 1;
+            border-right: 1px solid #ddd;
+            position: relative;
+            background-image: linear-gradient(#f9f9f9 1px, transparent 1px);
+            background-size: 100% 60px; /* Creates the hour grid lines */
+        }
+        .day-column:last-child { border-right: none; }
+        .day-header { text-align: center; font-weight: bold; padding: 10px 0; border-bottom: 2px solid #ccc; height: 20px; background: #fff;}
+        
+        /* Class Blocks */
+        .class-block {
+            position: absolute;
+            width: 90%;
+            left: 5%;
+            background: #b0b0b0;
+            border-left: 4px solid #d73f09;
+            color: #000;
+            font-size: 11px;
+            padding: 4px;
+            box-sizing: border-box;
+            overflow: hidden;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+        }
+        .class-block:hover { z-index: 10; box-shadow: 2px 4px 8px rgba(0,0,0,0.3); filter: brightness(1.1); }
+        .conflict { border-right: 4px solid red; background: #e0a0a0; }
+
+        /* Online/TBA Area */
+        .tba-container { width: 250px; background: white; padding: 15px; border-radius: 5px; border: 1px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .tba-item { background: #eee; padding: 8px; margin-bottom: 8px; border-left: 4px solid #555; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <h3>Schedule String:</h3>
+        <input type="text" id="scheduleInput" value="CS 161 (), MTH 310 (MWF 8:30-9:50a), MTH 253Z (), MTH 254 (MWF 10-11:40a), NMC 399 (MTWR 9a-4:50p)">
+        <button onclick="drawSchedule()">Draw Schedule</button>
+    </div>
+
+    <div class="main-container">
+        <div class="time-axis" id="timeLabels"></div>
+
+        <div class="calendar-container" id="calendar">
+            <div class="day-column" id="col-M"><div class="day-header">Mon</div></div>
+            <div class="day-column" id="col-T"><div class="day-header">Tue</div></div>
+            <div class="day-column" id="col-W"><div class="day-header">Wed</div></div>
+            <div class="day-column" id="col-R"><div class="day-header">Thu</div></div>
+            <div class="day-column" id="col-F"><div class="day-header">Fri</div></div>
+        </div>
+
+        <div class="tba-container">
+            <h3>Online / TBA</h3>
+            <div id="tbaList"></div>
+        </div>
+    </div>
+
+    <script>
+        const START_HOUR = 8; // 8 AM
+        const END_HOUR = 18;  // 6 PM
+        const PIXELS_PER_MINUTE = 1; // 60px per hour
+        const CALENDAR_START_MINS = START_HOUR * 60;
+
+        // Draw the Y-axis labels
+        function initTimeAxis() {
+            const axis = document.getElementById('timeLabels');
+            axis.innerHTML = '';
+            for (let h = START_HOUR; h <= END_HOUR; h++) {
+                let label = document.createElement('div');
+                label.className = 'time-label';
+                let displayHour = h > 12 ? h - 12 : h;
+                let ampm = h >= 12 ? 'pm' : 'am';
+                if(h === 12) displayHour = 12;
+                label.innerText = `${displayHour}${ampm}`;
+                // +40px to account for the day headers
+                label.style.top = `${((h - START_HOUR) * 60 * PIXELS_PER_MINUTE) + 40}px`; 
+                axis.appendChild(label);
+            }
+        }
+
+        // Smart Time Parser: Converts strings like "8:30" or "4:50p" into total minutes
+        // Smart Time Parser: Converts strings like "8:30" or "4:50p" into total minutes
+        function timeToMinutes(timeStr, isEndPM) {
+            let isPM = false;
+            
+            // 1. Strictly check for 'a' or 'p' first
+            if (timeStr.includes('p')) {
+                isPM = true;
+            } else if (timeStr.includes('a')) {
+                isPM = false;
+            } else {
+                // 2. Only inherit the PM from the end time if no letter was provided 
+                // (e.g., "1-2:50p" -> 1 assumes PM)
+                isPM = isEndPM;
+            }
+
+            let cleanTime = timeStr.replace(/[ap]/g, '').trim();
+            let parts = cleanTime.split(':');
+            let hours = parseInt(parts[0]);
+            let mins = parts.length > 1 ? parseInt(parts[1]) : 0;
+
+            if (isPM && hours !== 12) hours += 12;
+            if (!isPM && hours === 12) hours = 0;
+            
+            // OSU specific fallback: classes starting at 1,2,3,4,5 are almost certainly PM
+            if (hours >= 1 && hours <= 6 && !timeStr.includes('a') && !isPM) hours += 12; 
+
+            return (hours * 60) + mins;
+        }
+
+        function drawSchedule() {
+            // Clear old data
+            ['M', 'T', 'W', 'R', 'F'].forEach(day => {
+                const col = document.getElementById(`col-${day}`);
+                // Keep the header, remove blocks
+                col.innerHTML = `<div class="day-header">${col.querySelector('.day-header').innerText}</div>`;
+            });
+            document.getElementById('tbaList').innerHTML = '';
+
+            const inputStr = document.getElementById('scheduleInput').value;
+            
+            // Regex to find "Course Name (Details)"
+            // Example match: "MTH 310", "MWF 8:30-9:50a"
+            const regex = /([^,(]+)\s*\((.*?)\)/g;
+            let match;
+
+            while ((match = regex.exec(inputStr)) !== null) {
+                let courseName = match[1].trim();
+                let details = match[2].trim();
+
+                if (details === "") {
+                    // It's Online/TBA
+                    let tbaDiv = document.createElement('div');
+                    tbaDiv.className = 'tba-item';
+                    tbaDiv.innerText = courseName;
+                    document.getElementById('tbaList').appendChild(tbaDiv);
+                } else {
+                    // It's a scheduled class (e.g., "MWF 8:30-9:50a")
+                    let parts = details.split(' ');
+                    let days = parts[0]; // "MWF"
+                    let timeRange = parts[1]; // "8:30-9:50a"
+                    
+                    let times = timeRange.split('-');
+                    let endPM = times[1].includes('p'); // Does the class end in the PM?
+                    
+                    let startMins = timeToMinutes(times[0], endPM);
+                    let endMins = timeToMinutes(times[1], endPM);
+
+                    let topPx = (startMins - CALENDAR_START_MINS) * PIXELS_PER_MINUTE;
+                    let heightPx = (endMins - startMins) * PIXELS_PER_MINUTE;
+
+                    // Add a block to every day it meets
+                    for (let i = 0; i < days.length; i++) {
+                        let dayChar = days[i];
+                        if (['M', 'T', 'W', 'R', 'F'].includes(dayChar)) {
+                            let col = document.getElementById(`col-${dayChar}`);
+                            let block = document.createElement('div');
+                            block.className = 'class-block';
+                            // +40px offsets the header
+                            block.style.top = `${topPx + 40}px`;
+                            block.style.height = `${heightPx}px`;
+                            block.innerHTML = `<strong>${courseName}</strong><br>${timeRange}`;
+                            // ... inside your day loop, right before col.appendChild(block) ...
+
+// Simple Collision Detection
+let existingBlocks = col.querySelectorAll('.class-block');
+let hasConflict = false;
+
+existingBlocks.forEach(existing => {
+    let exTop = parseFloat(existing.style.top);
+    let exBottom = exTop + parseFloat(existing.style.height);
+    let newTop = topPx + 40;
+    let newBottom = newTop + heightPx;
+
+    // Standard overlap math: Max(start1, start2) < Min(end1, end2)
+    if (Math.max(exTop, newTop) < Math.min(exBottom, newBottom)) {
+        hasConflict = true;
+        
+        // Split them side-by-side
+        existing.style.width = '45%';
+        block.style.width = '45%';
+        block.style.left = '50%';
+        
+        // Apply warning styles
+        existing.classList.add('conflict-pattern');
+        block.classList.add('conflict-pattern');
+    }
+});
+
+col.appendChild(block);
+                            col.appendChild(block);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Initialize grid on load
+        initTimeAxis();
+        drawSchedule();
+    </script>
+</body>
+</html>
