@@ -6,3 +6,5 @@ My advisor wants to develop a program to determine if a class schedule is feasib
 1) Download time_conflict_finder.py run it input the term, list of classes, number of classes then the output will be all possible combinations of classes
 
 2) Copy the meeting_time for the combination you want to take, run the html code and iput the meeting_time to visualize the calendar.
+
+If you don't want to download python code, you  can run it here: https://colab.research.google.com/drive/1oSYz35OaIzrZGZAvU6I2d5mzUhKZFR_U?usp=sharing
