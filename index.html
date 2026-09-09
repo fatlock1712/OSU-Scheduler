@@ -319,7 +319,7 @@
 <body>
 
 <div class="topbar">
-  <img src="osu-logo.png" alt="OSU Logo" class="header-logo">
+  <img src="osu-logo.png" alt="OSU Logo" style="height: 44px; width: auto; margin-right: 8px; flex-shrink: 0;">
   <div class="titles">
     <h1>Schedule Builder by Loc Nguyen</h1>
     <p>A conflict-free schedule finder!</p>
@@ -940,9 +940,9 @@ const API_DETAILS_URL = "https://classes.oregonstate.edu/api/?page=fose&route=de
 // back a real diagnostic message (what was tried, and why each failed)
 // instead of a dead-end "check your internet" message.
 const CORS_PROXIES = [
-  { name: "corsfix", build: (url) => "https://proxy.corsfix.com/?" + url },
-  { name: "cors.lol", build: (url) => "https://api.cors.lol/url=" + url },
-  { name: "corsproxy.io", build: (url) => "https://corsproxy.io/?url=" + encodeURIComponent(url) },
+  { name: "allorigins", build: (url) => "https://api.allorigins.win/raw?url=" + encodeURIComponent(url) },
+  { name: "thingproxy", build: (url) => "https://thingproxy.freeboard.io/fetch/" + url },
+  { name: "corsproxy.io", build: (url) => "https://corsproxy.io/?url=" + encodeURIComponent(url) }
 ];
 
 async function postJSON(url, payload) {
