@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OSU Schedule Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --orange:#D73F09;
+    --orange-dark:#B23407;
+    --black:#171512;
+    --navy:#003B5C;
+    --green:#4A773C;
+    --tan:#B7A99A;
+    --tan-faint:#e9e3da;
+    --paper:#FFFFFF;
+    --panel:#FAF8F4;
+    --error:#A6321D;
+    --font-display:'Fraunces', serif;
+    --font-body:'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --max-w:760px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--font-body);
+    color:var(--black);
+    background:var(--paper);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--navy);}
+  button{font-family:inherit;}
+  .topbar{
+    background:var(--black);
+    color:#fff;
+    padding:14px 20px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .topbar .badge{
+    background:var(--orange);
+    color:#fff;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:.04em;
+    padding:6px 9px;
+    border-radius:4px;
+    flex-shrink:0;
+  }
+  .topbar .titles{min-width:0;}
+  .topbar h1{
+    font-family:var(--font-display);
+    font-size:19px;
+    font-weight:600;
+    margin:0;
+    line-height:1.2;
+  }
+  .topbar p{margin:1px 0 0; font-size:12.5px; color:#d8d3ca;}
+
+  .wrap{max-width:var(--max-w); margin:0 auto; padding:34px 20px 80px;}
+
+  .intro{margin-bottom:30px;}
+  .intro h2{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:26px;
+    margin:0 0 8px;
+  }
+  .intro p{margin:0; color:#4a463f; font-size:15px; max-width:58ch;}
+
+  /* ---- Step ledger ---- */
+  .step{
+    display:flex;
+    gap:18px;
+    padding:26px 0;
+    border-top:1px solid var(--tan-faint);
+  }
+  .step:first-of-type{border-top:1px solid var(--tan-faint);}
+  .step-num{
+    font-family:var(--font-display);
+    font-size:34px;
+    font-weight:600;
+    color:var(--tan);
+    width:40px;
+    flex-shrink:0;
+    line-height:1;
+    padding-top:2px;
+  }
+  .step-body{flex:1; min-width:0;}
+  .step-body h3{margin:0 0 4px; font-size:16px; font-weight:600;}
+  .step-body .hint{margin:0 0 14px; font-size:13.5px; color:#6b665c;}
+
+  label.field-label{display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:#3a3730;}
+
+  select, input[type=text], input[type=number]{
+    font-family:inherit;
+    font-size:15px;
+    padding:10px 12px;
+    border:1.5px solid var(--tan);
+    border-radius:6px;
+    background:#fff;
+    color:var(--black);
+  }
+  select:focus, input:focus, button:focus-visible, .campus-option input:focus-visible + span{
+    outline:2.5px solid var(--navy);
+    outline-offset:1px;
+  }
+
+  .term-row{display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;}
+  .term-row > div{display:flex; flex-direction:column;}
+  #yearInput{width:110px;}
+  #seasonSelect{width:150px;}
+  .term-preview{
+    margin-top:12px;
+    font-size:14px;
+    color:var(--navy);
+    font-weight:600;
+  }
+
+  fieldset{border:none; padding:0; margin:0;}
+  .campus-grid{display:flex; flex-wrap:wrap; gap:10px;}
+  .campus-option{position:relative;}
+  .campus-option input{position:absolute; opacity:0; width:1px; height:1px;}
+  .campus-option span{
+    display:block;
+    border:1.5px solid var(--tan);
+    border-radius:8px;
+    padding:10px 14px;
+    font-size:14px;
+    cursor:pointer;
+    user-select:none;
+    min-width:140px;
+  }
+  .campus-option span small{display:block; color:#6b665c; font-size:12px; margin-top:2px; font-weight:400;}
+  .campus-option input:checked + span{
+    border-color:var(--orange);
+    background:#FCEFE9;
+    box-shadow:inset 0 0 0 1px var(--orange);
+  }
+
+  .course-input-row{display:flex; gap:8px;}
+  .course-input-row input{flex:1;}
+  .btn{
+    font-weight:600;
+    font-size:14.5px;
+    border-radius:6px;
+    border:1.5px solid var(--black);
+    background:#fff;
+    color:var(--black);
+    padding:10px 16px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .btn:hover{background:#f2f0ec;}
+  .btn-primary{
+    background:var(--orange);
+    border-color:var(--orange);
+    color:#fff;
+  }
+  .btn-primary:hover{background:var(--orange-dark); border-color:var(--orange-dark);}
+  .btn-primary:disabled{background:#e3ab94; border-color:#e3ab94; cursor:not-allowed;}
+  .btn-text{
+    background:none; border:none; color:var(--navy); font-weight:600;
+    font-size:13.5px; cursor:pointer; padding:4px 0; text-decoration:underline;
+  }
+  .btn-block{width:100%; padding:14px; font-size:16px;}
+
+  .chip-list{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
+  .chip{
+    display:flex; align-items:center; gap:6px;
+    background:var(--panel);
+    border:1.5px solid var(--tan);
+    border-radius:999px;
+    padding:6px 8px 6px 14px;
+    font-size:13.5px;
+    font-weight:600;
+  }
+  .chip button{
+    background:var(--tan); color:#fff; border:none; border-radius:50%;
+    width:19px; height:19px; line-height:1; cursor:pointer; font-size:13px;
+    display:flex; align-items:center; justify-content:center; padding:0;
+  }
+  .chip button:hover{background:var(--error);}
+
+  .coreq-tips{margin-top:12px; display:flex; flex-direction:column; gap:6px;}
+  .coreq-tip{
+    background:#FFF7E8; border:1px solid #E8C878; border-radius:6px;
+    padding:8px 10px; font-size:13px; display:flex; justify-content:space-between; gap:10px; align-items:flex-start;
+  }
+  .coreq-tip button{background:none; border:none; color:#8a6d1f; cursor:pointer; font-size:13px; padding:0; text-decoration:underline; flex-shrink:0;}
+
+  .field-error{color:var(--error); font-size:13px; margin-top:8px; font-weight:600;}
+
+  .count-row{display:flex; align-items:center; gap:10px;}
+  #countInput{width:80px; text-align:center;}
+  .stepper-btn{
+    width:34px; height:34px; border-radius:6px; border:1.5px solid var(--tan);
+    background:#fff; font-size:17px; cursor:pointer; line-height:1;
+  }
+  .stepper-btn:hover{background:var(--panel);}
+
+  .generate-row{border-top:1px solid var(--tan-faint); padding-top:26px;}
+
+  /* ---- Progress panel ---- */
+  #progressPanel{padding:40px 0;}
+  .progress-title{font-family:var(--font-display); font-size:20px; font-weight:600; margin:0 0 4px;}
+  .progress-bar-track{
+    height:8px; border-radius:99px; background:var(--tan-faint); overflow:hidden; margin:18px 0 16px;
+  }
+  .progress-bar-fill{
+    height:100%; background:var(--orange); width:30%;
+    animation:indeterminate 1.4s ease-in-out infinite;
+  }
+  @keyframes indeterminate{
+    0%{transform:translateX(-100%); width:35%;}
+    50%{width:55%;}
+    100%{transform:translateX(220%); width:35%;}
+  }
+  .progress-bar-track.determinate .progress-bar-fill{animation:none; transform:none;}
+  #progressLog{
+    font-size:13.5px; color:#4a463f; background:var(--panel);
+    border:1px solid var(--tan-faint); border-radius:8px; padding:14px 16px;
+    max-height:220px; overflow-y:auto;
+  }
+  #progressLog div{padding:2px 0;}
+  #progressLog div.warn{color:#8a5a1f; font-weight:600;}
+  #progressLog div.err{color:var(--error); font-weight:600;}
+
+  /* ---- Results panel ---- */
+  #resultsPanel{padding:36px 0 0;}
+  .results-summary{
+    display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:14px;
+    margin-bottom:18px;
+  }
+  .results-summary h2{font-family:var(--font-display); font-size:22px; font-weight:600; margin:0 0 4px;}
+  .results-summary p{margin:0; font-size:13.5px; color:#6b665c;}
+  .results-actions{display:flex; gap:8px; flex-wrap:wrap;}
+
+  .callout{
+    border-radius:8px; padding:12px 14px; font-size:13.5px; margin-bottom:16px;
+  }
+  .callout-info{background:#EAF2F5; color:var(--navy); border:1px solid #BFDAE3;}
+  .network-error-details{margin-top:8px; font-family:ui-monospace, monospace; font-size:11.5px; color:var(--navy); opacity:0.85;}
+  .network-error-line{padding:2px 0;}
+  .callout-empty{background:var(--panel); border:1px solid var(--tan-faint); color:#4a463f; padding:26px; text-align:center; border-radius:10px;}
+
+  .results-toolbar{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;}
+  .results-toolbar input, .results-toolbar select{font-size:14px; padding:8px 10px;}
+  #filterInput{flex:1; min-width:180px;}
+
+  table.results-table{width:100%; border-collapse:collapse; font-size:14px;}
+  table.results-table thead th{
+    text-align:left; font-size:12px; text-transform:none; letter-spacing:.02em;
+    color:#6b665c; border-bottom:1.5px solid var(--black); padding:0 8px 8px;
+    font-weight:600;
+  }
+  table.results-table tbody tr.summary-row{border-bottom:1px solid var(--tan-faint); cursor:pointer;}
+  table.results-table tbody tr.summary-row:hover{background:var(--panel);}
+  table.results-table td{padding:12px 8px; vertical-align:top;}
+  .course-pills{display:flex; flex-wrap:wrap; gap:4px;}
+  .course-pill{
+    background:var(--panel); border:1px solid var(--tan-faint); border-radius:5px;
+    padding:2px 7px; font-size:12px; font-weight:600; white-space:nowrap;
+  }
+  .num-cell{font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .chevron{transition:transform .15s ease; display:inline-block;}
+  tr.summary-row.expanded .chevron{transform:rotate(90deg);}
+  tr.detail-row{display:none;}
+  tr.detail-row.open{display:table-row;}
+  tr.detail-row td{padding:0 8px 22px; border-bottom:1px solid var(--tan-faint);}
+  .detail-inner{background:var(--panel); border:1px solid var(--tan-faint); border-radius:8px; padding:16px;}
+  .detail-list{list-style:none; margin:0 0 16px; padding:0; font-size:13px;}
+  .detail-list li{padding:5px 0; border-bottom:1px dashed var(--tan-faint); display:flex; flex-wrap:wrap; gap:4px 10px;}
+  .detail-list li:last-child{border-bottom:none;}
+  .detail-list b{font-weight:700;}
+  .detail-list .muted{color:#6b665c;}
+
+  .mini-cal{display:flex; gap:6px;}
+  .mini-cal-hours{width:46px; flex-shrink:0; position:relative; height:260px;}
+  .mini-cal-hour{position:absolute; transform:translateY(-50%); font-size:10.5px; color:#6b665c; right:6px;}
+  .mini-cal-days{display:flex; gap:4px; flex:1;}
+  .mini-cal-day{flex:1; min-width:0;}
+  .mini-cal-day-label{text-align:center; font-size:11px; font-weight:700; color:#6b665c; margin-bottom:4px;}
+  .mini-cal-day-track{position:relative; height:260px; background:repeating-linear-gradient(to bottom, transparent, transparent 39px, var(--tan-faint) 39px, var(--tan-faint) 40px); border-left:1px solid var(--tan-faint);}
+  .mini-cal-block{
+    position:absolute; left:2px; right:2px; border-radius:4px; border-left:3px solid;
+    padding:2px 4px; font-size:10px; overflow:hidden; line-height:1.25;
+  }
+  .mini-cal-block b{display:block; font-size:10.5px;}
+  .mini-cal-empty{font-size:13px; color:#6b665c; font-style:italic;}
+
+  footer{
+    max-width:var(--max-w); margin:0 auto; padding:0 20px 60px; font-size:12.5px; color:#8a857a;
+  }
+  footer p{margin:6px 0;}
+
+  @media (max-width: 520px){
+    .step{gap:12px;}
+    .step-num{font-size:26px; width:28px;}
+    .campus-option span{min-width:0; flex:1;}
+    .campus-grid{flex-direction:column;}
+    .results-summary{flex-direction:column;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .progress-bar-fill{animation:none; width:60%;}
+    .chevron{transition:none;}
+  }
+
+  [hidden]{display:none !important;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="titles">
+    <h1>Schedule Builder by Loc Nguyen</h1>
+    <p>A conflict-free schedule finder!</p>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ============================= SETUP ============================= -->
+  <div id="setupPanel">
+    <div class="intro">
+      <h2>Let's build a schedule.</h2>
+      <p>Enter a term, a campus, and the classes a student is considering. This tool checks OSU's live class search and lists every way those classes can fit together without a time conflict.</p>
+    </div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Term</h3>
+        <p class="hint">Which term is this schedule for?</p>
+        <div class="term-row">
+          <div>
+            <label class="field-label" for="seasonSelect">Season</label>
+            <select id="seasonSelect">
+              <option value="FALL">Fall</option>
+              <option value="WINTER">Winter</option>
+              <option value="SPRING">Spring</option>
+              <option value="SUMMER">Summer</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="yearInput">Year</label>
+            <input type="number" id="yearInput" value="2026" inputmode="numeric">
+          </div>
+        </div>
+        <p class="term-preview" id="termPreview"></p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Campus</h3>
+        <p class="hint">Online (Ecampus) sections are always included too, since they never create a time conflict.</p>
+        <fieldset>
+          <legend style="position:absolute; width:1px; height:1px; overflow:hidden;">Campus</legend>
+          <div class="campus-grid" id="campusGrid">
+            <label class="campus-option">
+              <input type="radio" name="campus" value="C" checked>
+              <span>Corvallis<small>Main campus</small></span>
+            </label>
+            <label class="campus-option">
+              <input type="radio" name="campus" value="DSC">
+              <span>Ecampus<small>Online only</small></span>
+            </label>
+            <label class="campus-option">
+              <input type="radio" name="campus" value="B">
+              <span>Cascades<small>Bend campus</small></span>
+            </label>
+            <label class="campus-option">
+              <input type="radio" name="campus" value="ALL">
+              <span>Any campus<small>No preference</small></span>
+            </label>
+          </div>
+        </fieldset>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Classes to consider</h3>
+        <p class="hint">Add every class the student is willing to take this term — the more you add, the more combinations we can check. Format: subject + number, like <strong>MTH 251</strong>.</p>
+        <div class="course-input-row">
+          <input type="text" id="courseInput" placeholder="e.g. ENGR 103" autocomplete="off">
+          <button class="btn" id="addCourseBtn" type="button">Add</button>
+        </div>
+        <div class="chip-list" id="chipList"></div>
+        <div class="coreq-tips" id="coreqTips"></div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3>Classes per term</h3>
+        <p class="hint">How many of those classes should each schedule include?</p>
+        <div class="count-row">
+          <button class="stepper-btn" id="countDown" type="button" aria-label="Decrease">−</button>
+          <input type="number" id="countInput" value="4" min="1" max="12">
+          <button class="stepper-btn" id="countUp" type="button" aria-label="Increase">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="generate-row">
+      <button class="btn btn-primary btn-block" id="generateBtn" type="button">Find My Schedules</button>
+      <p class="field-error" id="setupError" hidden></p>
+    </div>
+  </div>
+
+  <!-- ============================= PROGRESS ============================= -->
+  <section id="progressPanel" hidden>
+    <p class="progress-title" id="progressTitle">Searching OSU's class listings…</p>
+    <div class="progress-bar-track" id="progressBarTrack"><div class="progress-bar-fill"></div></div>
+    <div id="progressLog"></div>
+    <div style="margin-top:18px;">
+      <button class="btn" id="cancelBtn" type="button">Cancel search</button>
+    </div>
+  </section>
+
+  <!-- ============================= RESULTS ============================= -->
+  <section id="resultsPanel" hidden>
+    <div class="results-summary">
+      <div>
+        <h2 id="resultsHeading">Results</h2>
+        <p id="resultsSub"></p>
+      </div>
+      <div class="results-actions">
+        <button class="btn" id="editSearchBtn" type="button">Edit search</button>
+        <button class="btn btn-primary" id="downloadCsvBtn" type="button">Download CSV</button>
+      </div>
+    </div>
+
+    <p style="margin:-10px 0 16px;">
+      <button class="btn-text" id="copyDebugBtn" type="button"></button>
+      <span id="copyDebugStatus" style="font-size:12.5px; color:#6b665c; margin-left:6px;"></span>
+    </p>
+
+    <div id="cappedNotice" class="callout callout-info" hidden></div>
+
+    <div id="hasResultsWrap">
+      <div class="results-toolbar">
+        <input type="text" id="filterInput" placeholder="Filter by course, CRN, or instructor…">
+        <select id="sortSelect">
+          <option value="option">Sort: as found</option>
+          <option value="fees-asc">Sort: lowest fees first</option>
+          <option value="credits-desc">Sort: most in-person credits</option>
+          <option value="credits-asc">Sort: fewest in-person credits</option>
+        </select>
+      </div>
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th style="width:30px;">#</th>
+            <th>Courses</th>
+            <th style="width:80px;">Credits</th>
+            <th id="offlineHeader" style="width:80px;">In person</th>
+            <th style="width:80px;">Fees</th>
+            <th style="width:20px;"></th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+
+    <div id="emptyResultsWrap" class="callout-empty" hidden>
+      <p><strong>No conflict-free schedules turned up.</strong></p>
+      <p>Try lowering the number of classes per term, switching to “Any campus,” or removing whichever class has the fewest section options.</p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <p>Class data comes live from OSU's public class search for the term and campus you choose. This tool checks time and date conflicts only — it does not check prerequisites, holds, major restrictions, or seat counts beyond “open vs. full.” Variable-credit courses may not total correctly; double-check those in the schedule directly.</p>
+</footer>
+
+<script>
+/* =====================================================================
+   PART A — CORE SCHEDULING LOGIC
+   Ported and unit-tested from the original Python "time conflict finder"
+   script. See the accompanying test suite used during development.
+   ===================================================================== */
+
+function timeToMinutes(timeStr) {
+  const timeInt = parseInt(timeStr, 10);
+  const hours = Math.floor(timeInt / 100);
+  const minutes = timeInt % 100;
+  return hours * 60 + minutes;
+}
+
+function parseISODate(str) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(str).trim());
+  if (!m) return null;
+  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  if (isNaN(d.getTime())) return null;
+  return d;
+}
+
+function datesOverlap(start1Str, end1Str, start2Str, end2Str) {
+  if (!start1Str || !end1Str || !start2Str || !end2Str) return true;
+  const s1 = parseISODate(start1Str), e1 = parseISODate(end1Str);
+  const s2 = parseISODate(start2Str), e2 = parseISODate(end2Str);
+  if (!s1 || !e1 || !s2 || !e2) return true;
+  return s1 <= e2 && s2 <= e1;
+}
+
+function safeParseMeetingTimes(raw) {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function checkOverlap(class1, class2) {
+  if (!datesOverlap(class1.start_date || "", class1.end_date || "", class2.start_date || "", class2.end_date || "")) {
+    return false;
+  }
+  const times1 = safeParseMeetingTimes(class1.meetingTimes);
+  const times2 = safeParseMeetingTimes(class2.meetingTimes);
+  if (!times1 || !times2 || times1.length === 0 || times2.length === 0) return false;
+
+  for (const t1 of times1) {
+    for (const t2 of times2) {
+      if (t1.meet_day && t1.meet_day === t2.meet_day) {
+        const start1 = timeToMinutes(t1.start_time), end1 = timeToMinutes(t1.end_time);
+        const start2 = timeToMinutes(t2.start_time), end2 = timeToMinutes(t2.end_time);
+        if (start1 < end2 && start2 < end1) return true;
+      }
+    }
+  }
+  return false;
+}
+
+function scheduleHasConflicts(bundleTuple) {
+  const flat = bundleTuple.flat();
+  for (let i = 0; i < flat.length; i++) {
+    for (let j = i + 1; j < flat.length; j++) {
+      if (checkOverlap(flat[i], flat[j])) return true;
+    }
+  }
+  return false;
+}
+
+function bundleComponents(courseClasses) {
+  const componentTypes = [...new Set(courseClasses.map((c) => c.schd))];
+  if (componentTypes.length <= 1) return courseClasses.map((c) => [c]);
+
+  const primary = courseClasses.filter((c) => c.schd === componentTypes[0]);
+  const secondary = courseClasses.filter((c) => c.schd === componentTypes[1]);
+
+  const campusesPrimary = new Set(primary.map((c) => c.camp));
+  const campusesSecondary = new Set(secondary.map((c) => c.camp));
+  const shareCampus = [...campusesPrimary].some((c) => campusesSecondary.has(c));
+  if (!shareCampus) return courseClasses.map((c) => [c]);
+
+  let bundles = [];
+  for (const prim of primary) {
+    for (const sec of secondary) {
+      if (prim.camp !== sec.camp) continue;
+      const pSec = prim.no || "", sSec = sec.no || "";
+      if (pSec && sSec && pSec.slice(0, 2) === sSec.slice(0, 2)) {
+        if (!checkOverlap(prim, sec)) bundles.push([prim, sec]);
+      }
+    }
+  }
+  if (bundles.length === 0) {
+    for (const prim of primary) {
+      for (const sec of secondary) {
+        if (prim.camp !== sec.camp) continue;
+        if (!checkOverlap(prim, sec)) bundles.push([prim, sec]);
+      }
+    }
+  }
+  return bundles;
+}
+
+const TERM_SUFFIXES = { SUMMER: "00", FALL: "01", WINTER: "02", SPRING: "03" };
+function computeTermCode(season, calendarYear) {
+  const suffix = TERM_SUFFIXES[season];
+  const academicYear = season === "SUMMER" || season === "FALL" ? calendarYear + 1 : calendarYear;
+  return `${academicYear}${suffix}`;
+}
+
+const DISTANCE_CAMPUS_CODES = ["DI", "DSC", "DL"];
+
+function filterOpenCampusSections(rawSections, campus) {
+  return rawSections.filter((section) => {
+    const isOpen = section.stat !== "F" && section.isCancelled !== "Y";
+    const camp = (section.camp || "").toUpperCase();
+    const isDistance = DISTANCE_CAMPUS_CODES.includes(camp);
+    const matchesCampus = campus === "ALL" || camp === campus || isDistance;
+    return isOpen && matchesCampus;
+  });
+}
+
+// fetchDetailsFn(key, cacheLabel) -> Promise<{hours_html?: string}>
+async function injectCreditsAndGroup(code, rawSections, campus, fetchDetailsFn) {
+  const filtered = filterOpenCampusSections(rawSections, campus);
+  const creditCache = {};
+  let detailFetchCount = 0;
+
+  for (const section of filtered) {
+    const compType = section.schd || "L";
+    const cacheLabel = `${code}-${compType}`;
+    if (!(cacheLabel in creditCache)) {
+      const details = await fetchDetailsFn(section.key, cacheLabel);
+      creditCache[cacheLabel] = (details && details.hours_html) || "0";
+      detailFetchCount++;
+    }
+    section.hours_html = creditCache[cacheLabel];
+  }
+
+  return { sections: filtered, detailFetchCount };
+}
+
+function buildAllCourseBundles(groupedClassesByCode) {
+  const bundles = {};
+  const dropped = [];
+  for (const [code, classes] of Object.entries(groupedClassesByCode)) {
+    const b = bundleComponents(classes);
+    if (b.length > 0) bundles[code] = b;
+    else dropped.push(code);
+  }
+  return { bundles, dropped };
+}
+
+function* combinations(arr, k) {
+  const n = arr.length;
+  if (k < 0 || k > n) return;
+  if (k === 0) { yield []; return; }
+  const indices = Array.from({ length: k }, (_, i) => i);
+  while (true) {
+    yield indices.map((i) => arr[i]);
+    let i = k - 1;
+    while (i >= 0 && indices[i] === i + n - k) i--;
+    if (i < 0) return;
+    indices[i]++;
+    for (let j = i + 1; j < k; j++) indices[j] = indices[j - 1] + 1;
+  }
+}
+
+function* cartesianProduct(arrays) {
+  const n = arrays.length;
+  if (n === 0) { yield []; return; }
+  const idx = new Array(n).fill(0);
+  const lengths = arrays.map((a) => a.length);
+  if (lengths.some((l) => l === 0)) return;
+  while (true) {
+    yield idx.map((i, k) => arrays[k][i]);
+    let pos = n - 1;
+    while (pos >= 0) {
+      idx[pos]++;
+      if (idx[pos] < lengths[pos]) break;
+      idx[pos] = 0;
+      pos--;
+    }
+    if (pos < 0) return;
+  }
+}
+
+function combinationCount(n, k) {
+  if (k < 0 || k > n) return 0;
+  k = Math.min(k, n - k);
+  let result = 1;
+  for (let i = 0; i < k; i++) result = (result * (n - i)) / (i + 1);
+  return Math.round(result);
+}
+
+function sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
+
+async function generateValidSchedulesAsync(courseBundlesMap, targetCount, opts = {}) {
+  const { maxChecks = 400000, maxResults = 500, onProgress = null, yieldEvery = 300, isCancelled = null } = opts;
+  const results = [];
+  let checked = 0;
+  let cappedReason = null;
+  const availableCourseCodes = Object.keys(courseBundlesMap);
+
+  outer: for (const selectedCourses of combinations(availableCourseCodes, targetCount)) {
+    const bundlesToCombine = selectedCourses.map((code) => courseBundlesMap[code]);
+    for (const combo of cartesianProduct(bundlesToCombine)) {
+      checked++;
+      if (!scheduleHasConflicts(combo)) {
+        results.push(analyzeValidSchedule(combo));
+        if (results.length >= maxResults) { cappedReason = "results"; break outer; }
+      }
+      if (checked >= maxChecks) { cappedReason = "checks"; break outer; }
+      if (checked % yieldEvery === 0) {
+        if (onProgress) onProgress({ checked, found: results.length, done: false });
+        await sleep(0);
+        if (isCancelled && isCancelled()) { cappedReason = "cancelled"; break outer; }
+      }
+    }
+  }
+  if (onProgress) onProgress({ checked, found: results.length, done: true });
+  return { results, checked, capped: cappedReason !== null, cappedReason };
+}
+
+function analyzeValidSchedule(bundleCombo) {
+  const flat = bundleCombo.flat();
+  let totalCredits = 0, totalCreditsOffline = 0, totalFees = 0;
+  const instructors = new Set();
+  const crns = [];
+  for (const course of flat) {
+    instructors.add(course.instr || "TBA");
+    crns.push(course.crn || "N/A");
+    const feeStr = String(course.ssrFees || "").trim();
+    if (feeStr) { const fee = Number(feeStr); if (!Number.isNaN(fee)) totalFees += fee; }
+    const creditStr = String(course.hours_html || "0").trim();
+    const credits = Number(creditStr);
+    if (!Number.isNaN(credits)) {
+      totalCredits += credits;
+      const isOnline = DISTANCE_CAMPUS_CODES.includes(String(course.camp || "").toUpperCase());
+      if (!isOnline) totalCreditsOffline += credits;
+    }
+  }
+  return { schedule: flat, instructors: [...instructors], totalFees, totalCredits, totalCreditsOffline, crns };
+}
+
+function csvField(value) {
+  const str = String(value === undefined || value === null ? "" : value);
+  if (/[",\n]/.test(str)) return '"' + str.replace(/"/g, '""') + '"';
+  return str;
+}
+
+function buildCSV(analyzedSchedules) {
+  const headers = ["Option","Courses","CRNs","Meeting Times","Instructors","Total Credits","Offline Credits","Total Fees ($)"];
+  const rows = [headers];
+  analyzedSchedules.forEach((sched, index) => {
+    const courseCodes = sched.schedule.map((c) => c.code).join(", ");
+    const crns = sched.crns.join(", ");
+    const meetingTimes = sched.schedule.map((c) => `${c.code} (${c.meets || "TBA"})`).join(", ");
+    const instructors = sched.instructors.join(", ");
+    rows.push([index + 1, courseCodes, crns, meetingTimes, instructors,
+      sched.totalCredits.toFixed(1), sched.totalCreditsOffline.toFixed(1), sched.totalFees.toFixed(2)]);
+  });
+  return rows.map((r) => r.map(csvField).join(",")).join("\r\n");
+}
+
+/* =====================================================================
+   PART B — APP STATE & DOM
+   ===================================================================== */
+
+const COMMON_COREQS = {
+  "CH 231": "CH 261 (Gen Chem Lab)",
+  "CH 232": "CH 262 (Gen Chem Lab)",
+  "CH 233": "CH 263 (Gen Chem Lab)",
+  "PH 211": "PH 221 (Physics Lab)",
+  "PH 212": "PH 222 (Physics Lab)",
+  "PH 213": "PH 223 (Physics Lab)",
+};
+
+const state = {
+  courses: [],
+  busy: false,
+  cancelRequested: false,
+  lastResults: [],
+  lastTermLabel: "",
+};
+
+const el = (id) => document.getElementById(id);
+const seasonSelect = el("seasonSelect");
+const yearInput = el("yearInput");
+const termPreview = el("termPreview");
+const courseInput = el("courseInput");
+const addCourseBtn = el("addCourseBtn");
+const chipList = el("chipList");
+const coreqTips = el("coreqTips");
+const countInput = el("countInput");
+const countDown = el("countDown");
+const countUp = el("countUp");
+const generateBtn = el("generateBtn");
+const setupError = el("setupError");
+
+const setupPanel = el("setupPanel");
+const progressPanel = el("progressPanel");
+const resultsPanel = el("resultsPanel");
+const progressLog = el("progressLog");
+const progressBarTrack = el("progressBarTrack");
+const cancelBtn = el("cancelBtn");
+
+const resultsHeading = el("resultsHeading");
+const resultsSub = el("resultsSub");
+const cappedNotice = el("cappedNotice");
+const hasResultsWrap = el("hasResultsWrap");
+const emptyResultsWrap = el("emptyResultsWrap");
+const filterInput = el("filterInput");
+const sortSelect = el("sortSelect");
+const resultsBody = el("resultsBody");
+const offlineHeader = el("offlineHeader");
+const editSearchBtn = el("editSearchBtn");
+const downloadCsvBtn = el("downloadCsvBtn");
+const copyDebugBtn = el("copyDebugBtn");
+const copyDebugStatus = el("copyDebugStatus");
+
+const SEASON_LABELS = { FALL: "Fall", WINTER: "Winter", SPRING: "Spring", SUMMER: "Summer" };
+
+function updateTermPreview() {
+  const season = seasonSelect.value;
+  const year = parseInt(yearInput.value, 10);
+  if (!year || String(year).length !== 4) {
+    termPreview.textContent = "";
+    return;
+  }
+  termPreview.textContent = `You're searching: ${SEASON_LABELS[season]} ${year}`;
+}
+seasonSelect.addEventListener("change", updateTermPreview);
+yearInput.addEventListener("input", updateTermPreview);
+updateTermPreview();
+
+/* ---- Course chip management ---- */
+
+function normalizeCourseCode(raw) {
+  let code = raw.trim().toUpperCase().replace(/\s+/g, " ");
+  const m = /^([A-Z]+)\s*([0-9].*)$/.exec(code);
+  if (m) code = `${m[1]} ${m[2]}`;
+  return code;
+}
+
+function renderChips() {
+  chipList.innerHTML = "";
+  state.courses.forEach((code) => {
+    const chip = document.createElement("div");
+    chip.className = "chip";
+    chip.innerHTML = `<span>${escapeHtml(code)}</span>`;
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.setAttribute("aria-label", `Remove ${code}`);
+    removeBtn.textContent = "×";
+    removeBtn.addEventListener("click", () => {
+      state.courses = state.courses.filter((c) => c !== code);
+      renderChips();
+    });
+    chip.appendChild(removeBtn);
+    chipList.appendChild(chip);
+  });
+}
+
+function addCourseFromInput() {
+  const raw = courseInput.value;
+  if (!raw || !raw.trim()) return;
+  const code = normalizeCourseCode(raw);
+  if (!/^[A-Z]{1,5} [A-Z0-9]{2,6}$/.test(code)) {
+    showCoreqTip(`"${code}" doesn't look like a course code — try a format like MTH 251.`, true);
+    return;
+  }
+  if (!state.courses.includes(code)) {
+    state.courses.push(code);
+    renderChips();
+  }
+  courseInput.value = "";
+  courseInput.focus();
+  if (COMMON_COREQS[code]) {
+    showCoreqTip(`Heads up — ${code} usually needs ${COMMON_COREQS[code]}. Add it too if the student needs it.`);
+  }
+}
+
+function showCoreqTip(message, isWarning) {
+  const tip = document.createElement("div");
+  tip.className = "coreq-tip";
+  if (isWarning) tip.style.background = "#FBEAE6";
+  tip.innerHTML = `<span>${escapeHtml(message)}</span>`;
+  const dismiss = document.createElement("button");
+  dismiss.type = "button";
+  dismiss.textContent = "Dismiss";
+  dismiss.addEventListener("click", () => tip.remove());
+  tip.appendChild(dismiss);
+  coreqTips.appendChild(tip);
+}
+
+addCourseBtn.addEventListener("click", addCourseFromInput);
+courseInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); addCourseFromInput(); }
+});
+
+/* ---- Count stepper ---- */
+countDown.addEventListener("click", () => {
+  countInput.value = Math.max(1, (parseInt(countInput.value, 10) || 1) - 1);
+});
+countUp.addEventListener("click", () => {
+  countInput.value = Math.min(12, (parseInt(countInput.value, 10) || 1) + 1);
+});
+
+/* =====================================================================
+   PART C — API LAYER (with a CORS-proxy fallback)
+   ===================================================================== */
+
+const API_SEARCH_URL = "https://classes.oregonstate.edu/api/?page=fose&route=search";
+const API_DETAILS_URL = "https://classes.oregonstate.edu/api/?page=fose&route=details";
+
+// Public CORS proxies are individually flaky (rate limits, free-tier
+// restrictions, outages) so we try several, in order, each using its own
+// documented URL convention. If every single one fails, the caller gets
+// back a real diagnostic message (what was tried, and why each failed)
+// instead of a dead-end "check your internet" message.
+const CORS_PROXIES = [
+  { name: "corsfix", build: (url) => "https://proxy.corsfix.com/?" + url },
+  { name: "cors.lol", build: (url) => "https://api.cors.lol/url=" + url },
+  { name: "corsproxy.io", build: (url) => "https://corsproxy.io/?url=" + encodeURIComponent(url) },
+];
+
+async function postJSON(url, payload) {
+  const attempt = (target) =>
+    fetch(target, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+  const failures = [];
+
+  try {
+    const res = await attempt(url);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return await res.json();
+  } catch (err) {
+    failures.push(`direct: ${err && err.message ? err.message : err}`);
+  }
+
+  for (const proxy of CORS_PROXIES) {
+    try {
+      const res = await attempt(proxy.build(url));
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return await res.json();
+    } catch (err) {
+      failures.push(`${proxy.name}: ${err && err.message ? err.message : err}`);
+    }
+  }
+
+  throw new Error(failures.join(" | "));
+}
+
+async function fetchCourseData(courseCode, termCode) {
+  const payload = { other: { srcdb: termCode }, criteria: [{ field: "alias", value: courseCode }] };
+  const data = await postJSON(API_SEARCH_URL, payload);
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.results)) return data.results;
+  return [];
+}
+
+// Returns null (not {}) on total failure, so callers can tell "no credits
+// on file" apart from "we couldn't reach the server" and warn accordingly.
+async function fetchSectionDetails(uniqueKey, termCode) {
+  if (!uniqueKey) return {};
+  try {
+    return await postJSON(API_DETAILS_URL, { key: `key:${uniqueKey}`, srcdb: termCode });
+  } catch (e) {
+    return null;
+  }
+}
+
+/* =====================================================================
+   PART D — PIPELINE (fetch -> filter -> bundle -> generate)
+   ===================================================================== */
+
+function logLine(text, kind) {
+  const line = document.createElement("div");
+  if (kind) line.className = kind;
+  line.textContent = text;
+  progressLog.appendChild(line);
+  progressLog.scrollTop = progressLog.scrollHeight;
+}
+
+function setProgressDeterminate(fraction) {
+  progressBarTrack.classList.add("determinate");
+  progressBarTrack.querySelector(".progress-bar-fill").style.width = Math.min(100, fraction * 100) + "%";
+}
+
+function showPanel(which) {
+  setupPanel.hidden = which !== "setup";
+  progressPanel.hidden = which !== "progress";
+  resultsPanel.hidden = which !== "results";
+}
+
+async function runGeneration() {
+  try {
+    await runGenerationInner();
+  } finally {
+    // Guarantees the "busy" flag always clears, no matter which return
+    // path is taken inside runGenerationInner (including ones added later).
+    state.busy = false;
+  }
+}
+
+async function runGenerationInner() {
+  state.busy = true;
+  state.cancelRequested = false;
+  progressLog.innerHTML = "";
+  lastTallyLine = null; // the old tally line was just wiped out along with the log
+  progressBarTrack.classList.remove("determinate");
+  progressBarTrack.querySelector(".progress-bar-fill").style.width = "";
+  showPanel("progress");
+
+  const season = seasonSelect.value;
+  const year = parseInt(yearInput.value, 10);
+  const termCode = computeTermCode(season, year);
+  state.lastTermLabel = `${SEASON_LABELS[season]} ${year}`;
+  const campus = document.querySelector('input[name="campus"]:checked').value;
+
+  logLine(`Searching ${state.lastTermLabel} at ${campusLabel(campus)}…`);
+
+  const groupedClasses = {};
+  let fetchFailureCount = 0;
+  const networkErrorDetails = [];
+
+  for (const code of state.courses) {
+    if (state.cancelRequested) return finishCancelled();
+    logLine(`Fetching ${code}…`);
+    let raw;
+    try {
+      raw = await fetchCourseData(code, termCode);
+    } catch (e) {
+      fetchFailureCount++;
+      networkErrorDetails.push(`${code} — ${e.message}`);
+      logLine(`Couldn't reach OSU's class search for ${code}.`, "err");
+      logLine(`  Details: ${e.message}`, "err");
+      continue;
+    }
+
+    if (state.cancelRequested) return finishCancelled();
+
+    // Fetches credit hours once per (course, component type) — not once
+    // per section — via the caching built into injectCreditsAndGroup.
+    let creditLookupFailed = false;
+    const wrappedFetchDetails = async (key, cacheLabel) => {
+      const details = await fetchSectionDetails(key, termCode);
+      await sleep(120); // be polite to OSU's server between detail lookups
+      if (details === null) creditLookupFailed = true;
+      return details;
+    };
+
+    const { sections } = await injectCreditsAndGroup(code, raw, campus, wrappedFetchDetails);
+
+    if (state.cancelRequested) return finishCancelled();
+
+    if (creditLookupFailed) {
+      logLine(`Couldn't confirm credit hours for some ${code} sections — they'll show as 0 credits below. Double-check credits for ${code} directly if that matters here.`, "warn");
+    }
+
+    if (sections.length === 0) {
+      logLine(`No open sections found for ${code} at ${campusLabel(campus)}.`, "warn");
+    } else {
+      groupedClasses[code] = sections;
+    }
+    await sleep(150);
+  }
+
+  logLine("Building combinations…");
+
+  const { bundles: allCourseBundles, dropped } = buildAllCourseBundles(groupedClasses);
+  dropped.forEach((code) => {
+    logLine(`Dropped ${code}: no valid lecture + recitation/lab pairing found.`, "warn");
+  });
+
+  let targetCount = parseInt(countInput.value, 10) || 1;
+  const availableCodes = Object.keys(allCourseBundles);
+
+  if (availableCodes.length === 0) {
+    if (fetchFailureCount === state.courses.length) {
+      logLine("Couldn't reach OSU's class search for any class in this list — this looks like a network or site-blocking issue, not an empty search.", "err");
+      await sleep(400);
+      renderResults([], { networkFailure: true, networkErrorDetails });
+      return;
+    }
+    logLine("No usable classes were found for this term, campus, and wishlist.", "err");
+    await sleep(400);
+    renderResults([], { noCoursesUsable: true });
+    return;
+  }
+
+  if (availableCodes.length < targetCount) {
+    logLine(`Only ${availableCodes.length} usable class(es) available — lowering the target from ${targetCount} to ${availableCodes.length}.`, "warn");
+    targetCount = availableCodes.length;
+  }
+
+  const totalSubsets = combinationCount(availableCodes.length, targetCount);
+  logLine(`Checking ${totalSubsets.toLocaleString()} course combination${totalSubsets === 1 ? "" : "s"} for section-level conflicts…`);
+
+  let genOutcome;
+  try {
+    genOutcome = await generateValidSchedulesAsync(allCourseBundles, targetCount, {
+      onProgress: ({ checked, found }) => {
+        setProgressDeterminate(Math.min(0.97, checked / 60000));
+        progressLogUpdateTally(checked, found);
+      },
+      isCancelled: () => state.cancelRequested,
+    });
+  } catch (e) {
+    logLine("Something went wrong while building schedules. Please try again.", "err");
+    showPanel("setup");
+    return;
+  }
+
+  if (genOutcome.cappedReason === "cancelled") return finishCancelled();
+
+  logLine(`Done — checked ${genOutcome.checked.toLocaleString()} combinations, found ${genOutcome.results.length.toLocaleString()} valid schedule(s).`);
+  await sleep(250);
+
+  renderResults(genOutcome.results, { capped: genOutcome.cappedReason });
+}
+
+let lastTallyLine = null;
+function progressLogUpdateTally(checked, found) {
+  if (!lastTallyLine) {
+    lastTallyLine = document.createElement("div");
+    lastTallyLine.style.color = "#6b665c";
+    progressLog.appendChild(lastTallyLine);
+  }
+  lastTallyLine.textContent = `  …checked ${checked.toLocaleString()} so far, ${found.toLocaleString()} valid schedule(s) found`;
+  progressLog.scrollTop = progressLog.scrollHeight;
+}
+
+function finishCancelled() {
+  logLine("Search cancelled.", "warn");
+  state.busy = false;
+  showPanel("setup");
+}
+
+function campusLabel(code) {
+  return { C: "Corvallis", DSC: "Ecampus", B: "Cascades", ALL: "any campus" }[code] || code;
+}
+
+cancelBtn.addEventListener("click", () => {
+  state.cancelRequested = true;
+});
+
+/* =====================================================================
+   PART E — RESULTS RENDERING
+   ===================================================================== */
+
+const DAY_LABELS = { M: "Mon", T: "Tue", W: "Wed", R: "Thu", F: "Fri", S: "Sat", U: "Sun" };
+const COURSE_COLORS = ["#4A773C", "#00859B", "#006A8E", "#D3832B", "#0D5257", "#AA9D2E", "#003B5C", "#D73F09"];
+
+// OSU's API encodes weekdays as numeric strings -- "0" = Monday ... "6" =
+// Sunday (confirmed against real data: {"0","4"} -> "MF", {"0","2","4"} ->
+// "MWF", {"3"} -> "R"/Thursday). That's Python's date.weekday() convention,
+// NOT the Banner-style single letters used in the human-readable "meets"
+// text. Conflict detection itself doesn't care (it only ever compares two
+// raw codes for equality), but rendering the calendar does need to know
+// what each code actually means. Plain letters are also accepted here so
+// the function keeps working if a different data source ever supplies them.
+const NUMERIC_DAY_CODE_TO_LETTER = { "0": "M", "1": "T", "2": "W", "3": "R", "4": "F", "5": "S", "6": "U" };
+const VALID_DAY_LETTERS = new Set(["M", "T", "W", "R", "F", "S", "U"]);
+
+function normalizeDayCode(raw) {
+  if (raw === undefined || raw === null || raw === "") return null;
+  const key = String(raw).trim();
+  const upper = key.toUpperCase();
+  if (VALID_DAY_LETTERS.has(upper)) return upper;
+  if (Object.prototype.hasOwnProperty.call(NUMERIC_DAY_CODE_TO_LETTER, key)) {
+    return NUMERIC_DAY_CODE_TO_LETTER[key];
+  }
+  return null; // unrecognized code -- skip this meeting rather than guess
+}
+
+function colorForCourse(code) {
+  let hash = 0;
+  for (let i = 0; i < code.length; i++) hash = (hash * 31 + code.charCodeAt(i)) >>> 0;
+  return COURSE_COLORS[hash % COURSE_COLORS.length];
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, (s) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[s]));
+}
+
+function formatClock(mins) {
+  let h = Math.floor(mins / 60);
+  const m = mins % 60;
+  const ampm = h >= 12 ? "pm" : "am";
+  h = h % 12; if (h === 0) h = 12;
+  return `${h}${m ? ":" + String(m).padStart(2, "0") : ""}${ampm}`;
+}
+
+function buildMiniCalendar(flatCourses) {
+  const meetings = [];
+  let minStart = Infinity, maxEnd = -Infinity;
+  const usedDays = new Set();
+
+  flatCourses.forEach((course) => {
+    const times = safeParseMeetingTimes(course.meetingTimes);
+    if (!times) return;
+    times.forEach((t) => {
+      const day = normalizeDayCode(t.meet_day);
+      if (!day) return;
+      const start = timeToMinutes(t.start_time), end = timeToMinutes(t.end_time);
+      meetings.push({ day, start, end, code: course.code });
+      usedDays.add(day);
+      minStart = Math.min(minStart, start);
+      maxEnd = Math.max(maxEnd, end);
+    });
+  });
+
+  if (meetings.length === 0) {
+    return '<p class="mini-cal-empty">No fixed meeting times in this option — fully online or arranged.</p>';
+  }
+
+  const days = ["M", "T", "W", "R", "F"];
+  if (usedDays.has("S")) days.push("S");
+  if (usedDays.has("U")) days.push("U");
+
+  const rangeStart = Math.max(0, Math.floor(minStart / 60) * 60 - 30);
+  const rangeEnd = Math.ceil(maxEnd / 60) * 60 + 30;
+  const totalMinutes = rangeEnd - rangeStart;
+
+  const hourMarks = [];
+  for (let m = Math.ceil(rangeStart / 60) * 60; m <= rangeEnd; m += 60) hourMarks.push(m);
+
+  const dayCols = days.map((day) => {
+    const dayMeetings = meetings.filter((m) => m.day === day);
+    const blocks = dayMeetings.map((m) => {
+      const top = ((m.start - rangeStart) / totalMinutes) * 100;
+      const height = Math.max(4, ((m.end - m.start) / totalMinutes) * 100);
+      const color = colorForCourse(m.code);
+      return `<div class="mini-cal-block" style="top:${top}%; height:${height}%; background:${color}22; border-left-color:${color};">
+        <b>${escapeHtml(m.code)}</b>${formatClock(m.start)}–${formatClock(m.end)}
+      </div>`;
+    }).join("");
+    return `<div class="mini-cal-day">
+      <div class="mini-cal-day-label">${DAY_LABELS[day]}</div>
+      <div class="mini-cal-day-track">${blocks}</div>
+    </div>`;
+  }).join("");
+
+  const hoursHtml = hourMarks.map((m) => {
+    const top = ((m - rangeStart) / totalMinutes) * 100;
+    return `<div class="mini-cal-hour" style="top:${top}%">${formatClock(m)}</div>`;
+  }).join("");
+
+  return `<div class="mini-cal">
+    <div class="mini-cal-hours">${hoursHtml}</div>
+    <div class="mini-cal-days">${dayCols}</div>
+  </div>`;
+}
+
+function renderResults(results, meta = {}) {
+  state.lastResults = results;
+  showPanel("results");
+
+  resultsHeading.textContent = results.length === 0 ? "No schedules found" : `${results.length} possible schedule${results.length === 1 ? "" : "s"}`;
+  resultsSub.textContent = `${state.lastTermLabel} · ${state.courses.length} class(es) considered`;
+
+  cappedNotice.hidden = true;
+  if (meta.capped === "results") {
+    cappedNotice.hidden = false;
+    cappedNotice.textContent = "Showing the first 500 valid schedules found. Narrow the class list or lower the number of classes per term to see a more focused set.";
+  } else if (meta.capped === "checks") {
+    cappedNotice.hidden = false;
+    cappedNotice.textContent = "This wishlist created a very large number of combinations, so the search stopped early. Narrow the class list for a complete result.";
+  } else if (meta.noCoursesUsable) {
+    cappedNotice.hidden = false;
+    cappedNotice.textContent = "None of the requested classes had open sections for this term and campus. Double-check the course codes, try “Any campus,” or pick a different term.";
+  } else if (meta.networkFailure) {
+    cappedNotice.hidden = false;
+    const details = (meta.networkErrorDetails || [])
+      .map((line) => `<div class="network-error-line">${escapeHtml(line)}</div>`)
+      .join("");
+    cappedNotice.innerHTML = `<strong>Couldn't reach OSU's class search</strong> — this is a connectivity or site-blocking issue, not an empty result. Use <strong>Edit search</strong> to try again once resolved.<div class="network-error-details">${details}</div>`;
+  }
+
+  const allEqual = results.length > 0 && results.every((r) => Math.abs(r.totalCredits - r.totalCreditsOffline) < 1e-9);
+  offlineHeader.hidden = allEqual;
+
+  if (results.length === 0) {
+    hasResultsWrap.hidden = true;
+    emptyResultsWrap.hidden = false;
+    return;
+  }
+  hasResultsWrap.hidden = false;
+  emptyResultsWrap.hidden = true;
+
+  filterInput.value = "";
+  sortSelect.value = "option";
+  renderTable(results);
+}
+
+function getSortedFiltered() {
+  const term = filterInput.value.trim().toLowerCase();
+  let list = state.lastResults.map((r, i) => ({ ...r, _idx: i }));
+
+  if (term) {
+    list = list.filter((r) => {
+      const haystack = [
+        ...r.schedule.map((c) => c.code),
+        ...r.crns,
+        ...r.instructors,
+      ].join(" ").toLowerCase();
+      return haystack.includes(term);
+    });
+  }
+
+  const sortMode = sortSelect.value;
+  if (sortMode === "fees-asc") list.sort((a, b) => a.totalFees - b.totalFees);
+  else if (sortMode === "credits-desc") list.sort((a, b) => b.totalCreditsOffline - a.totalCreditsOffline);
+  else if (sortMode === "credits-asc") list.sort((a, b) => a.totalCreditsOffline - b.totalCreditsOffline);
+  else list.sort((a, b) => a._idx - b._idx);
+
+  return list;
+}
+
+function renderTable() {
+  const list = getSortedFiltered();
+  resultsBody.innerHTML = "";
+
+  if (list.length === 0) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td colspan="6" style="text-align:center; color:#6b665c; padding:24px;">No schedules match that filter.</td>`;
+    resultsBody.appendChild(tr);
+    return;
+  }
+
+  list.forEach((sched, displayIndex) => {
+    const summaryRow = document.createElement("tr");
+    summaryRow.className = "summary-row";
+
+    const pills = sched.schedule.map((c) => `<span class="course-pill">${escapeHtml(c.code)}</span>`).join("");
+
+    summaryRow.innerHTML = `
+      <td class="num-cell">${displayIndex + 1}</td>
+      <td><div class="course-pills">${pills}</div></td>
+      <td class="num-cell">${sched.totalCredits.toFixed(1)}</td>
+      <td class="num-cell">${offlineHeader.hidden ? "" : sched.totalCreditsOffline.toFixed(1)}</td>
+      <td class="num-cell">$${sched.totalFees.toFixed(2)}</td>
+      <td><span class="chevron">›</span></td>
+    `;
+
+    const detailRow = document.createElement("tr");
+    detailRow.className = "detail-row";
+    const detailCell = document.createElement("td");
+    detailCell.colSpan = 6;
+
+    const listItems = sched.schedule.map((c) => `
+      <li>
+        <b>${escapeHtml(c.code)}</b>
+        <span class="muted">${escapeHtml(c.meets || "TBA")}</span>
+        <span class="muted">· ${escapeHtml(c.instr || "TBA")}</span>
+        <span class="muted">· CRN ${escapeHtml(c.crn || "N/A")}</span>
+      </li>
+    `).join("");
+
+    detailCell.innerHTML = `
+      <div class="detail-inner">
+        <ul class="detail-list">${listItems}</ul>
+        ${buildMiniCalendar(sched.schedule)}
+      </div>
+    `;
+    detailRow.appendChild(detailCell);
+
+    summaryRow.addEventListener("click", () => {
+      const opening = !detailRow.classList.contains("open");
+      detailRow.classList.toggle("open", opening);
+      summaryRow.classList.toggle("expanded", opening);
+    });
+
+    resultsBody.appendChild(summaryRow);
+    resultsBody.appendChild(detailRow);
+  });
+}
+
+filterInput.addEventListener("input", renderTable);
+sortSelect.addEventListener("change", renderTable);
+
+downloadCsvBtn.addEventListener("click", () => {
+  const csv = buildCSV(state.lastResults);
+  const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const safeTerm = state.lastTermLabel.replace(/\s+/g, "_");
+  a.href = url;
+  a.download = `OSU_Schedules_${safeTerm}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+
+editSearchBtn.addEventListener("click", () => {
+  showPanel("setup");
+});
+
+copyDebugBtn.addEventListener("click", async () => {
+  if (!state.lastResults || state.lastResults.length === 0) {
+    copyDebugStatus.textContent = "No results to sample yet.";
+    return;
+  }
+  // A handful of real course records, including the exact meetingTimes
+  // shape OSU's API returned — the fastest way to diagnose display bugs
+  // like the calendar not matching up with the listed meeting times.
+  const sample = state.lastResults[0].schedule.map((c) => ({
+    code: c.code,
+    no: c.no,
+    schd: c.schd,
+    camp: c.camp,
+    meets: c.meets,
+    meetingTimes: c.meetingTimes,
+    start_date: c.start_date,
+    end_date: c.end_date,
+  }));
+  const text = JSON.stringify(sample, null, 2);
+
+  try {
+    await navigator.clipboard.writeText(text);
+    copyDebugStatus.textContent = "Copied to clipboard.";
+  } catch (e) {
+    copyDebugStatus.textContent = "Couldn't copy automatically — showing it instead.";
+    prompt("Copy this text:", text);
+  }
+  setTimeout(() => { copyDebugStatus.textContent = ""; }, 5000);
+});
+
+/* =====================================================================
+   PART F — GENERATE BUTTON / VALIDATION
+   ===================================================================== */
+
+generateBtn.addEventListener("click", () => {
+  setupError.hidden = true;
+
+  const year = parseInt(yearInput.value, 10);
+  if (!year || String(Math.abs(year)).length !== 4) {
+    setupError.textContent = "Enter a 4-digit year.";
+    setupError.hidden = false;
+    return;
+  }
+  if (state.courses.length === 0) {
+    setupError.textContent = "Add at least one class first.";
+    setupError.hidden = false;
+    return;
+  }
+  if (state.busy) return;
+
+  runGeneration();
+});
+</script>
+
+</body>
+</html>
