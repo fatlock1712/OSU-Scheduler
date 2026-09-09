@@ -940,9 +940,7 @@ const API_DETAILS_URL = "https://classes.oregonstate.edu/api/?page=fose&route=de
 // back a real diagnostic message (what was tried, and why each failed)
 // instead of a dead-end "check your internet" message.
 const CORS_PROXIES = [
-  { name: "allorigins", build: (url) => "https://api.allorigins.win/raw?url=" + encodeURIComponent(url) },
-  { name: "thingproxy", build: (url) => "https://thingproxy.freeboard.io/fetch/" + url },
-  { name: "corsproxy.io", build: (url) => "https://corsproxy.io/?url=" + encodeURIComponent(url) }
+  { name: "my-proxy", build: (url) => "https://osu-proxy.fatlock17122007.workers.dev/?url=" + encodeURIComponent(url) }
 ];
 
 async function postJSON(url, payload) {
