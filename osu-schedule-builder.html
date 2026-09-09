@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OSU Schedule Builder</title>
+<link rel="icon" type="image/png" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -330,7 +331,7 @@
   <div id="setupPanel">
     <div class="intro">
       <h2>Let's build a schedule.</h2>
-      <p>Enter a term, a campus, and the classes a student is considering. This tool checks OSU's live class search and lists every way those classes can fit together without a time conflict.</p>
+      <p>Enter a term, a campus, and the classes a student is considering. This tool checks OSU's <a href="https://classes.oregonstate.edu/" target="_blank">scheduler</a> search and lists every way those classes can fit together without a time conflict.</p>
     </div>
 
     <div class="step">
@@ -482,8 +483,38 @@
 
 </div>
 
+<!-- ============================= TECH DOC ============================= -->
+<div class="tech-doc-wrap">
+  <div class="tech-doc">
+    <h2>How the algorithm works under the hood</h2>
+    
+    <p>In the OSU scheduler, searching for a class sends a request for JSON data to OSU's servers. The algorithm then extracts all relevant information from the received data.</p>
+    
+    <figure>
+      <img src="network_api.png" alt="Browser Network tab showing JSON response from OSU scheduler search for MTH 253">
+      <figcaption>Intercepting the JSON payload for a class search (MTH 253) in the browser's Network tab.</figcaption>
+    </figure>
+
+    <p>After collecting details like meeting times, instructors, fees, and campus locations, it evaluates every class combination to check for time conflicts. By tracking course IDs, it can identify specific class types, such as studios, recitations, or labs.</p>
+    
+    <p>To simplify this process, I implemented basic rules, such as prioritizing on-campus classes (since online alternatives are usually available for them).</p>
+    
+    <h3>Known Limitations (Co-requisites)</h3>
+    <p>As a side note, the following classes must be taken together. However, due to non-standard course IDs, the algorithm currently does not recognize them as related:</p>
+    <ul>
+      <li>"CH 231" and "CH 261 (Gen Chem Lab)"</li>
+      <li>"CH 232" and "CH 262 (Gen Chem Lab)"</li>
+      <li>"CH 233" and "CH 263 (Gen Chem Lab)"</li>
+      <li>"PH 211" and "PH 221 (Physics Lab)"</li>
+      <li>"PH 212" and "PH 222 (Physics Lab)"</li>
+      <li>"PH 213" and "PH 223 (Physics Lab)"</li>
+      <li>and more...</li>
+    </ul>
+  </div>
+</div>
+
 <footer>
-  <p>Class data comes live from OSU's public class search for the term and campus you choose. This tool checks time and date conflicts only — it does not check prerequisites, holds, major restrictions, or seat counts beyond “open vs. full.” Variable-credit courses may not total correctly; double-check those in the schedule directly.</p>
+  <p>Class data comes live from OSU's <a href="https://classes.oregonstate.edu/" target="_blank">scheduler</a> for the term and campus you choose. This tool checks time and date conflicts only — it does not check prerequisites, holds, major restrictions, or seat counts beyond “open vs. full.” Variable-credit courses may not total correctly; double-check those in the schedule directly.</p>
 </footer>
 
 <script>
