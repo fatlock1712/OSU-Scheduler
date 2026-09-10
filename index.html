@@ -848,7 +848,7 @@ function updateTermPreview() {
     termPreview.textContent = "";
     return;
   }
-  termPreview.textContent = `You're searching: ${SEASON_LABELS[season]} ${year}`;
+  termPreview.textContent = `You're searching: ${SEASON_LABELS[season]} ${year}. By default, you can only view the schedule for the current and two upcoming terms.`;
 }
 seasonSelect.addEventListener("change", updateTermPreview);
 yearInput.addEventListener("input", updateTermPreview);
@@ -940,7 +940,8 @@ const API_DETAILS_URL = "https://classes.oregonstate.edu/api/?page=fose&route=de
 // back a real diagnostic message (what was tried, and why each failed)
 // instead of a dead-end "check your internet" message.
 const CORS_PROXIES = [
-  { name: "my-proxy", build: (url) => "https://osu-proxy.fatlock17122007.workers.dev/?url=" + encodeURIComponent(url) }
+  { name: "my-proxy", build: (url) => "https://osu-proxy.fatlock17122007.workers.dev/?url=" + encodeURIComponent(url) },
+  { name: "my-proxy", build: (url) => "https://osu-proxy.phatloc17122007.workers.dev/?url=" + encodeURIComponent(url) }
 ];
 
 async function postJSON(url, payload) {
