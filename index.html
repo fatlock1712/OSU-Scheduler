@@ -110,13 +110,19 @@
     background:#fff;
     color:var(--black);
   }
-  input[type="range"] {
+input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   background: transparent;
   cursor: pointer;
+  width: 100%;
 }
 
+input[type="range"]:focus {
+  outline: none;
+}
+
+/* The track line */
 input[type="range"]::-webkit-slider-runnable-track {
   height: 6px;
   background: var(--tan-faint);
@@ -129,21 +135,36 @@ input[type="range"]::-moz-range-track {
   border-radius: 3px;
 }
 
-input[type="range"]:focus {
-  outline: none;
+/* The circle handle */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--orange);
+  margin-top: -7px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: transform 0.1s ease;
 }
 
-input[type="range"]::-webkit-slider-thumb:focus-visible {
-  box-shadow: 0 0 0 4px rgba(215, 63, 9, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15);
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: var(--orange);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
-input[type="range"]::-moz-range-thumb:focus-visible {
-  box-shadow: 0 0 0 4px rgba(215, 63, 9, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15);
+/* Slight scale-up when clicking down */
+input[type="range"]::-webkit-slider-thumb:active {
+  transform: scale(1.15);
 }
-  select:focus, input:focus, button:focus-visible, .campus-option input:focus-visible + span{
-    outline:2.5px solid var(--navy);
-    outline-offset:1px;
-  }
+
+input[type="range"]::-moz-range-thumb:active {
+  transform: scale(1.15);
+}
 
   .term-row{display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;}
   .term-row > div{display:flex; flex-direction:column;}
