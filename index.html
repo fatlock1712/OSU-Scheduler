@@ -418,6 +418,23 @@
       </div>
     </div>
 
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h3>Max schedules to show</h3>
+        <p class="hint">Choose how many valid schedules the app should find before stopping.</p>
+        <select id="maxResultsSelect" style="width: 160px;">
+          <option value="100">100 schedules</option>
+          <option value="500" selected>500 schedules (default)</option>
+          <option value="1000">1,000 schedules</option>
+          <option value="2000">2,000 schedules</option>
+          <option value="4000">4,000 schedules</option>
+          <option value="8000">8,000 schedules</option>
+          <option value="16000">16,000 schedules</option>
+        </select>
+      </div>
+    </div>
+
     <div class="generate-row">
       <button class="btn btn-primary btn-block" id="generateBtn" type="button">Find My Schedules</button>
       <p class="field-error" id="setupError" hidden></p>
@@ -446,6 +463,11 @@
         <button class="btn btn-primary" id="downloadCsvBtn" type="button">Download CSV</button>
       </div>
     </div>
+
+    <details id="searchLogDetails" style="margin-bottom: 16px; background: var(--panel); border: 1px solid var(--tan-faint); border-radius: 8px; padding: 10px 14px; font-size: 13.5px;">
+      <summary style="cursor: pointer; font-weight: 600; color: var(--navy);">View search log & warnings</summary>
+      <div id="resultsLogCopy" style="margin-top: 10px; max-height: 150px; overflow-y: auto; color: #4a463f; font-family: ui-monospace, monospace; font-size: 12px;"></div>
+    </details>
 
     <p style="margin:-10px 0 16px;">
       <button class="btn-text" id="copyDebugBtn" type="button"></button>
@@ -845,7 +867,9 @@ const copyDebugBtn = el("copyDebugBtn");
 const copyDebugStatus = el("copyDebugStatus");
 
 const SEASON_LABELS = { FALL: "Fall", WINTER: "Winter", SPRING: "Spring", SUMMER: "Summer" };
-
+const maxResultsSelect = el("maxResultsSelect");
+const resultsLogCopy = el("resultsLogCopy");
+  
 function updateTermPreview() {
   const season = seasonSelect.value;
   const year = parseInt(yearInput.value, 10);
@@ -1151,9 +1175,12 @@ async function runGenerationInner() {
   const totalSubsets = combinationCount(availableCodes.length, targetCount);
   logLine(`Checking ${totalSubsets.toLocaleString()} course combination${totalSubsets === 1 ? "" : "s"} for section-level conflicts…`);
 
+  const userMaxResults = parseInt(maxResultsSelect.value, 10) || 500;
+  
   let genOutcome;
   try {
     genOutcome = await generateValidSchedulesAsync(allCourseBundles, targetCount, {
+      maxResults: userMaxResults,
       onProgress: ({ checked, found }) => {
         setProgressDeterminate(Math.min(0.97, checked / 60000));
         progressLogUpdateTally(checked, found);
@@ -1310,7 +1337,7 @@ function buildMiniCalendar(flatCourses) {
 function renderResults(results, meta = {}) {
   state.lastResults = results;
   showPanel("results");
-
+  resultsLogCopy.innerHTML = progressLog.innerHTML;
   resultsHeading.textContent = results.length === 0 ? "No schedules found" : `${results.length} possible schedule${results.length === 1 ? "" : "s"}`;
   resultsSub.textContent = `${state.lastTermLabel} · ${state.courses.length} class(es) considered`;
 
