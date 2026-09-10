@@ -1236,7 +1236,7 @@ async function runGenerationInner() {
   const totalSubsets = combinationCount(availableCodes.length, targetCount);
   logLine(`Checking ${totalSubsets.toLocaleString()} course combination${totalSubsets === 1 ? "" : "s"} for section-level conflicts…`);
 
-  const userMaxResults = parseInt(maxResultsSelect.value, 10) || 500;
+  const userMaxResults = parseInt(maxResultsSlider.value, 10) || 500;
   
   let genOutcome;
   try {
