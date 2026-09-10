@@ -423,15 +423,10 @@
       <div class="step-body">
         <h3>Max schedules to show</h3>
         <p class="hint">Choose how many valid schedules the app should find before stopping.</p>
-        <select id="maxResultsSelect" style="width: 160px;">
-          <option value="100">100 schedules</option>
-          <option value="500" selected>500 schedules (default)</option>
-          <option value="1000">1,000 schedules</option>
-          <option value="2000">2,000 schedules</option>
-          <option value="4000">4,000 schedules</option>
-          <option value="8000">8,000 schedules</option>
-          <option value="16000">16,000 schedules</option>
-        </select>
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <input type="range" id="maxResultsSlider" min="100" max="2000" step="100" value="500" style="flex: 1; accent-color: var(--orange); cursor: pointer;">
+          <span id="maxResultsValue" style="font-weight: 600; min-width: 120px; font-variant-numeric: tabular-nums; color: var(--black);">500 schedules</span>
+        </div>
       </div>
     </div>
 
@@ -867,7 +862,14 @@ const copyDebugBtn = el("copyDebugBtn");
 const copyDebugStatus = el("copyDebugStatus");
 
 const SEASON_LABELS = { FALL: "Fall", WINTER: "Winter", SPRING: "Spring", SUMMER: "Summer" };
-const maxResultsSelect = el("maxResultsSelect");
+const maxResultsSlider = el("maxResultsSlider");
+const maxResultsValue = el("maxResultsValue");
+
+if (maxResultsSlider && maxResultsValue) {
+  maxResultsSlider.addEventListener("input", () => {
+    maxResultsValue.textContent = `${maxResultsSlider.value} schedules`;
+  });
+}
 const resultsLogCopy = el("resultsLogCopy");
   
 function updateTermPreview() {
