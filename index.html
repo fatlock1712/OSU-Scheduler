@@ -798,6 +798,11 @@ async function generateValidSchedulesAsync(courseBundlesMap, targetCount, opts =
   outer: for (const selectedCourses of combinations(availableCourseCodes, targetCount)) {
     const bundlesToCombine = selectedCourses.map((code) => courseBundlesMap[code]);
     for (const combo of cartesianProduct(bundlesToCombine)) {
+      if (isCancelled && isCancelled()) { 
+        cappedReason = "cancelled"; 
+        break outer; 
+      }
+      
       checked++;
       if (!scheduleHasConflicts(combo)) {
         results.push(analyzeValidSchedule(combo));
@@ -811,6 +816,9 @@ async function generateValidSchedulesAsync(courseBundlesMap, targetCount, opts =
       }
     }
   }
+  
+  if (isCancelled && isCancelled()) { cappedReason = "cancelled"; }
+
   if (onProgress) onProgress({ checked, found: results.length, done: true });
   return { results, checked, capped: cappedReason !== null, cappedReason };
 }
@@ -1246,14 +1254,15 @@ async function runGenerationInner() {
     return;
   }
 
-  if (genOutcome.cappedReason === "cancelled") return finishCancelled();
+  // Check if cancel was requested during or right as generation finished
+  if (state.cancelRequested || genOutcome.cappedReason === "cancelled") {
+    return finishCancelled();
+  }
 
   logLine(`Done — checked ${genOutcome.checked.toLocaleString()} combinations, found ${genOutcome.results.length.toLocaleString()} valid schedule(s).`);
   await sleep(250);
 
   renderResults(genOutcome.results, { capped: genOutcome.cappedReason });
-}
-
 let lastTallyLine = null;
 function progressLogUpdateTally(checked, found) {
   if (!lastTallyLine) {
