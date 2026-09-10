@@ -1408,7 +1408,7 @@ function renderResults(results, meta = {}) {
   cappedNotice.hidden = true;
   if (meta.capped === "results") {
     cappedNotice.hidden = false;
-    cappedNotice.innerHTML = "Showing valid schedules found. Narrow the class list or lower the number of classes per term to see a more focused set. <br> Note: Online sections are included alongside on-campus ones. If an in-person section fills up, the app will utilize available online alternatives to find conflict-free combinations.";
+    cappedNotice.innerHTML = "Showing valid schedules found. Narrow the class list or lower the number of classes per term to see a more focused set. <br> Note: The algorithm prioritizes on-campus classes to streamline the computation, if there are both options, it will choose on-campus ones. If an in-person section fills up, the app will utilize available online alternatives to find conflict-free combinations.";
   } else if (meta.capped === "checks") {
     cappedNotice.hidden = false;
     cappedNotice.textContent = "This wishlist created a very large number of combinations, so the search stopped early. Narrow the class list for a complete result.";
