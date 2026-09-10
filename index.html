@@ -853,7 +853,7 @@ function updateTermPreview() {
     termPreview.textContent = "";
     return;
   }
-  termPreview.innerHTML = `You're searching: ${SEASON_LABELS[season]} ${year}. <br> By default, you can only view the schedule for the current and two upcoming terms.`;
+  termPreview.innerHTML = `By default, you can only view the schedule for the current and two upcoming terms.`;
 }
 seasonSelect.addEventListener("change", updateTermPreview);
 yearInput.addEventListener("input", updateTermPreview);
