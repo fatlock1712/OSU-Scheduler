@@ -855,8 +855,33 @@ function updateTermPreview() {
   }
   termPreview.innerHTML = `By default, you can only view the schedule for the current and two upcoming terms.`;
 }
+
+// Automatically set the current season and year on page load
+function setCurrentTerm() {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1; // 1 to 12 (Jan = 1)
+
+  let currentSeason = "FALL";
+  if (currentMonth >= 1 && currentMonth <= 3) {
+    currentSeason = "WINTER";
+  } else if (currentMonth >= 4 && currentMonth <= 6) {
+    currentSeason = "SPRING";
+  } else if (currentMonth >= 7 && currentMonth <= 8) {
+    currentSeason = "SUMMER";
+  } else {
+    currentSeason = "FALL"; // Sept - Dec
+  }
+
+  seasonSelect.value = currentSeason;
+  yearInput.value = currentYear;
+}
+
 seasonSelect.addEventListener("change", updateTermPreview);
 yearInput.addEventListener("input", updateTermPreview);
+
+// Run on load
+setCurrentTerm();
 updateTermPreview();
 
 /* ---- Course chip management ---- */
