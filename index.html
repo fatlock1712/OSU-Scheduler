@@ -392,7 +392,7 @@
       <div class="step-num">3</div>
       <div class="step-body">
         <h3>Classes to consider</h3>
-        <p class="hint">Add every class the student is willing to take this term — the more you add, the more combinations we can check. Format: subject + number, like <strong>MTH 251</strong>.</p>
+        <p class="hint">Add every class the student is willing to take this term — the more you add, the more combinations we can check. Format: subject + number, like <strong>MTH 251Z</strong>.</p>
         <div class="course-input-row">
           <input type="text" id="courseInput" placeholder="e.g. ENGR 103" autocomplete="off">
           <button class="btn" id="addCourseBtn" type="button">Add</button>
@@ -887,7 +887,7 @@ function addCourseFromInput() {
   if (!raw || !raw.trim()) return;
   const code = normalizeCourseCode(raw);
   if (!/^[A-Z]{1,5} [A-Z0-9]{2,6}$/.test(code)) {
-    showCoreqTip(`"${code}" doesn't look like a course code — try a format like MTH 251.`, true);
+    showCoreqTip(`"${code}" doesn't look like a course code — try a format like MTH 251Z.`, true);
     return;
   }
   if (!state.courses.includes(code)) {
