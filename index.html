@@ -110,6 +110,44 @@
     background:#fff;
     color:var(--black);
   }
+  input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  background: var(--tan-faint);
+  border-radius: 3px;
+}
+
+input[type="range"]::-moz-range-track {
+  height: 6px;
+  background: var(--tan-faint);
+  border-radius: 3px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--orange);
+  margin-top: -7px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: var(--orange);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
   select:focus, input:focus, button:focus-visible, .campus-option input:focus-visible + span{
     outline:2.5px solid var(--navy);
     outline-offset:1px;
@@ -424,7 +462,7 @@
         <h3>Max schedules to show</h3>
         <p class="hint">Choose how many valid schedules the app should find before stopping.</p>
         <div style="display: flex; align-items: center; gap: 14px;">
-          <input type="range" id="maxResultsSlider" min="100" max="2000" step="100" value="500" style="flex: 1; accent-color: var(--orange); cursor: pointer;">
+          <input type="range" id="maxResultsSlider" min="100" max="10000" step="100" value="500" style="flex: 1; accent-color: var(--orange); cursor: pointer;">
           <span id="maxResultsValue" style="font-weight: 600; min-width: 120px; font-variant-numeric: tabular-nums; color: var(--black);">500 schedules</span>
         </div>
       </div>
