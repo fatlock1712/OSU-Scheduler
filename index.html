@@ -473,7 +473,7 @@ input[type="range"]::-moz-range-thumb:active {
       <div class="step-num">5</div>
       <div class="step-body">
         <h3>Max schedules to show</h3>
-        <p class="hint">Choose how many valid schedules the app should find before stopping.Since <a href="https://en.wikipedia.org/wiki/Combinatorial_explosion" target="_blank">combinatorial explosion </a> is unavoidable, choosing a very high limit with many classes may increase load times.</a></p>
+        <p class="hint">Choose how many valid schedules the app should find before stopping.Since <a href="https://en.wikipedia.org/wiki/Combinatorial_explosion" target="_blank">combinatorial explosion </a> is unavoidable, choosing a very high limit with many classes may increase load times.</p>
         <div style="display: flex; align-items: center; gap: 14px;">
           <input type="range" id="maxResultsSlider" min="100" max="10000" step="100" value="500" style="flex: 1; accent-color: var(--orange); cursor: pointer;">
           <span id="maxResultsValue" style="font-weight: 600; min-width: 120px; font-variant-numeric: tabular-nums; color: var(--black);">500 schedules</span>
@@ -1263,6 +1263,8 @@ async function runGenerationInner() {
   await sleep(250);
 
   renderResults(genOutcome.results, { capped: genOutcome.cappedReason });
+}
+
 let lastTallyLine = null;
 function progressLogUpdateTally(checked, found) {
   if (!lastTallyLine) {
